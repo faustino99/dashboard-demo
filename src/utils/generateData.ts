@@ -27,7 +27,7 @@ export async function generateRandomData(
   const data: DataPoint[] = [];
 
   // mock delay to simulate async data fetching
-  // await new Promise(resolve => setTimeout(resolve, 2000));
+  await new Promise(resolve => setTimeout(resolve, 2000));
 
   const MS_PER_HOUR = 60 * 60 * 1000;
   const INTERVAL_HOURS = 24; // generate data every 24 hours (1 day)
