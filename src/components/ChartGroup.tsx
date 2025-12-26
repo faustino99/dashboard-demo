@@ -7,6 +7,7 @@ import {
   ChartMode,
 } from '../utils/constants';
 import { ChartData, getChartMetadata } from '../utils/generateData';
+import { computeFreeEditCols } from '../utils/gridLayout';
 import { HeaderBar } from './HeaderBar';
 import { GridLayoutSection } from './GridLayoutSection';
 import { BarChart } from './BarChart';
@@ -19,24 +20,42 @@ export function ChartGroup() {
   const [isGrid, setIsGrid] = useState(true);
   const [mode, setMode] = useState<ChartMode>('Responsive');
   const [charts, setCharts] = useState<ChartData[]>([]);
+  const [hasCustomLayout, setHasCustomLayout] = useState(false);
 
-  // Default layout for grid mode (3x3 grid)
-  const defaultLayout: Layout = Array.from({ length: 9 }, (_, i) => ({
-    i: `chart-${i}`,
-    x: (i % 3) * 4,
-    y: Math.floor(i / 3) * 4,
-    w: 4,
-    h: 4,
-    minW: 2,
-  }));
+  const buildDefaultLayout = (cols: number): Layout => {
+    const chartWidth = Math.max(2, cols / 3);
+    const chartsPerRow = Math.max(1, Math.floor(cols / chartWidth));
 
-  const [layout, setLayout] = useState<Layout>(defaultLayout);
+    return Array.from({ length: 9 }, (_, i) => {
+      return {
+        i: `chart-${i}`,
+        x: (i % chartsPerRow) * chartWidth,
+        y: Math.floor(i / chartsPerRow) * 4,
+        w: chartWidth,
+        h: 4,
+        minW: 2,
+      };
+    });
+  };
+
+  const [layout, setLayout] = useState<Layout>(() =>
+    buildDefaultLayout(computeFreeEditCols(1200))
+  );
 
   useEffect(() => {
     // In a real app, this would be an async API request, and we would want a loading state / error handling
     const chartsData = getChartMetadata();
     setCharts(chartsData);
   }, []);
+
+  useEffect(() => {
+    if (!windowWidth || hasCustomLayout) {
+      return;
+    }
+
+    const cols = computeFreeEditCols(windowWidth);
+    setLayout(buildDefaultLayout(cols));
+  }, [windowWidth, hasCustomLayout]);
 
   useEffect(() => {
     function handleResize() {
@@ -72,6 +91,11 @@ export function ChartGroup() {
     }
   };
 
+  const handleLayoutChange = (newLayout: Layout) => {
+    setHasCustomLayout(true);
+    setLayout(newLayout);
+  };
+
   return (
     <div className="w-full overflow-scroll">
       <div className="w-full min-w-[300px]" ref={widthRef}>
@@ -80,7 +104,7 @@ export function ChartGroup() {
           <GridLayoutSection
             windowWidth={windowWidth}
             layout={layout}
-            onLayoutChange={setLayout}
+            onLayoutChange={handleLayoutChange}
           />
         ) : (
           <div

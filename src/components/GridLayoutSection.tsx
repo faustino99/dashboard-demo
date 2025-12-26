@@ -10,6 +10,7 @@ import {
   MAX_CONDENSED_CHART_WIDTH,
 } from '../utils/constants';
 import { getChartMetadata } from '../utils/generateData';
+import { computeFreeEditCols } from '../utils/gridLayout';
 
 interface GridLayoutSectionProps {
   windowWidth: number;
@@ -22,19 +23,6 @@ export function GridLayoutSection({
   layout,
   onLayoutChange,
 }: GridLayoutSectionProps) {
-  const TARGET_CELL_WIDTH_PX = 100; // desired grid cell width for free edit
-
-  const computeFreeEditCols = (containerW: number) => {
-    const marginX = GRID_ITEM_MARGIN_PX;
-    const paddingX = GRID_CONTAINER_PADDING_PX;
-    const usable = containerW - paddingX * 2 + marginX;
-    const cols = Math.max(
-      1,
-      Math.min(12, Math.floor(usable / (TARGET_CELL_WIDTH_PX + marginX)))
-    );
-    return cols;
-  };
-
   const charts = getChartMetadata();
 
   return (
